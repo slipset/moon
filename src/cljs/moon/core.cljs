@@ -102,7 +102,6 @@
     (. parent appendChild tr)
    (dorun (map (partial create-td tr workout ) [:title :holds :duration :rest :repeat]))))
 
-
 (defn to-html [workout]
   (let [table (by-id "total")]
     (.log js/console table)
@@ -140,56 +139,9 @@
   (let [state-channel (chan)
         completed-channel (chan)
         clock-channel (wall-clock)]
-;     (completer completed-channel (partial update-status "completed"))
     (progressor clock-channel state-channel)
     (onto-chan state-channel workout)))
 
 (let [workout (map-indexed (fn [i coll] (assoc coll :id i)) workout)]
   (to-html workout)
   (run (mapcat expand workout)))
-
-
-;; (defn count-down [{:keys [seconds clock-chan dom-updater]}]
-;;   (go-loop [i 1] 
-;;     (<! clock-chan)
-;;     (dom-updater i)
-;;     (when (< i seconds)
-;;       (recur (inc i)))))
-
-;; (defn do-state [{:keys [state] :as current-state}]
-;;   (count-down (assoc current-state :dom-updater (partial update-status (name state)))))
-
-;; (defn progressor [clock-chan states-ch completed-ch stop-ch]
-;;   (go-loop []
-;;     (let [[current-state channel] (alts! [stop-ch states-ch] :priority true)]
-;;       (if (= channel stop-ch)
-;;         (close! clock-chan)
-;;         (when current-state
-;;           (<! (do-state (assoc current-state :clock-chan clock-chan)))
-;;           (>! completed-ch current-state)
-;;           (recur))))
-;;     (close! completed-ch)))
-
-;; (defn completer [completed-ch dom-updater]
-;;   (go-loop [complete []]
-;;     (some->> (<! completed-ch)
-;;              :state
-;;               (conj complete)
-;;               (dom-updater)
-;;               (recur))
-;;       (dom-updater "Well done!")))
-
-
-
-;; #_(defn init []
-;;   (let [btn (by-id "control")
-;;         clicks (listen btn "click")
-;;         stop-channel (chan)]
-;;     (go-loop [click (<! clicks)]
-;;       (let [new-state (toggle btn)]
-;;         (if (= :start new-state)
-;;           (run stop-channel)
-;;           (>! stop-channel :stop)))
-;;         (recur (<! clicks)))))
-
-

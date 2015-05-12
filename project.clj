@@ -71,5 +71,5 @@
                        :cljsbuild {:builds {:app
                                             {:source-paths ["env/prod/cljs"]
                                              :compiler
-                                             {:optimizations :advanced
-                                              :pretty-print false}}}}}})
+                                             {:optimizations :none
+                                              :pretty-print true}}}}}})

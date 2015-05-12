@@ -18,11 +18,3 @@
 (defn html [el]
   (. el -innerHTML))
 
-(defn toggle [btn]
-  (let [v (keyword (clojure.string/lower-case (html btn)))]
-    (set-html! btn (if (= :start v) "Stop" "Start"))
-    v))
-
-(defn update-status [id sofar]
-  (set-html! (by-id id) (str sofar))
-  sofar)

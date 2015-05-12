@@ -88,7 +88,6 @@
     (aset (aget el "style") "color" "red")
     (dorun (map set-html (dissoc (assoc excercise :total total) :id)))))
     
-
 (defn create-td [parent workout key]
   (let [td (. js/document createElement "td")]
     (. parent appendChild td)
@@ -139,6 +138,7 @@
     (progressor clock-channel state-channel)
     (onto-chan state-channel workout)))
 
-(let [workout (map-indexed (fn [i coll] (assoc coll :id i)) workout)]
-  (to-html workout)
-  (run (mapcat expand workout)))
+(defn main []
+  (let [workout (map-indexed (fn [i coll] (assoc coll :id i)) workout)]
+    (to-html workout)
+    (run (mapcat expand workout))))

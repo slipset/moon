@@ -110,7 +110,7 @@
 (defn wall-clock []
   (let [output (chan)]
     (go-loop []
-      (<! (timeout 10))
+      (<! (timeout 1000))
       (when (>! output :tick)
         (recur)))
     output))

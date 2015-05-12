@@ -1,6 +1,7 @@
 (ns moon.core
     (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-    (:require [moon.dom :refer [set-html! by-id listen]] 
+    (:require [moon.dom :refer [set-html! by-id listen]]
+              [clojure.string :as string]
               [cljs.core.async :refer
                [<! >!  timeout onto-chan chan put! take! alts! close!]]))
 
@@ -75,7 +76,7 @@
 
 (defn set-html [[keyword val]]
   (let [formatted-val (if (vector? val)
-                        (clojure.string/join ", " val)
+                        (string/join ", " val)
                         val)]
     (set-html! (by-id (str keyword)) formatted-val)))
   

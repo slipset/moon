@@ -1,9 +1,8 @@
 (ns moon.core
     (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-    (:require [moon.dom :refer [set-html! by-id listen toggle update-status]] 
+    (:require [moon.dom :refer [set-html! by-id listen]] 
               [cljs.core.async :refer
                [<! >!  timeout onto-chan chan put! take! alts! close!]]))
-
 
 (def workout [
               {:title "Double armed dead hang on front three fingers open handed"
@@ -86,7 +85,6 @@
 (defn display-set [{:keys [rest duration repeat id] :as excercise}]
   (let [total (->minutes (* (+ rest duration) repeat))
         el (by-id (str "workout-" id))]
-    (.log js/console el)
     (aset (aget el "style") "color" "red")
     (dorun (map set-html (dissoc (assoc excercise :total total) :id)))))
     
@@ -104,7 +102,6 @@
 
 (defn to-html [workout]
   (let [table (by-id "total")]
-    (.log js/console table)
     (dorun (map (partial create-row table) workout))))
   
 (defn wall-clock []

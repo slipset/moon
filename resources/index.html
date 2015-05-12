@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div style = "float:left">
+      <h1>Current excersise</h1>
+      <p id = ":title"></p>
+      <table>
+	<tr>
+	  <th>Holds</th>
+	  <th>Duration</th>
+	  <th>Rest</th>
+	  <th>Repeat</th>
+	  <th>Total</th>
+	</tr>
+	<tr>
+	  <td id = ":holds"></td>
+	  <td><span id = ":done"/>/<span id = ":duration"/></td>
+	  <td><span id = ":rested"/>/<span id = ":rest"/></td>
+	  <td><span id = ":count"/>/<span id = ":repeat"/></td>
+	  <td id = ":total"></td>	  
+	</tr>
+      </table>
+      <div><button id="next">Next</button></div>
+    </div>
+    <div style = "float:right">
+      <h1>Total workout</h1>
+      <table >
+	<tbody id = "total">
+	  <tr><th>Description</th><th>Holds</th><th>Duration</th><th>Rest</th><th>Sets</th></tr>
+	</tbody>
+      </table>
+    </div>  
+    <script src="/js/app.js" type="text/javascript"></script>
+  </body>
+</html>
+ 

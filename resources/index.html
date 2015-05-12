@@ -13,47 +13,49 @@
   </head>
   <body>
     <div class = "container">
-    <div class = "row">
-    <div class = "col-sm-6">
-      <h1>Current exercise</h1>
-      <p id = ":title"></p>
-      <table class = "table-bordered">
-	<tr>
-	  <th>Holds</th>
-	  <th>Duration</th>
-	  <th>Rest</th>
-	  <th>Repeat</th>
-	  <th>Total</th>
-	</tr>
-	<tr>
-	  <td id = ":holds"></td>
-	  <td><span id = ":done"/>/<span id = ":duration"/></td>
-	  <td><span id = ":rested"/>/<span id = ":rest"/></td>
-	  <td><span id = ":count"/>/<span id = ":repeat"/></td>
-	  <td id = ":total"></td>	  
-	</tr>
-      </table>
-    </div>
-    <div class ="row">
-      <div class = "col-sm-6">
-	<button id="next">Next</button>
+      <div class = "row">
+	<div class = "col-sm-12">
+	  <h1>Current exercise</h1>
+	  <p id = ":title"></p>
+	  <table class = "table-bordered" style = "width:100%">
+	    <tr>
+	      <th>Holds</th>
+	      <th>Duration</th>
+	      <th>Rest</th>
+	      <th>Repeat</th>
+	      <th>Total</th>
+	    </tr>
+	    <tr>
+	      <td id = ":holds"></td>
+	      <td><span id = ":done"/>/<span id = ":duration"/></td>
+	      <td><span id = ":rested"/>/<span id = ":rest"/></td>
+	      <td><span id = ":count"/>/<span id = ":repeat"/></td>
+	      <td id = ":total"></td>	  
+	    </tr>
+	  </table>
+	</div>
+      </div>
+<!--  <div class ="row">
+	<div class = "col-sm-12">
+	  <button id="next">Next</button>
+	</div>
+      </div> -->
+      <div class = "row">
+	<div class = "col-sm-12">
+	  <img class = "img-rounded" src = "FingerboardNumbered1.jpg"/>
+	</div>
+      </div>
+      <div class = "row">
+	<div class = "col-sm-12">
+	  <h1>Total workout</h1>
+	  <table class = "table-bordered" style = "width:100%">
+	    <tbody id = "total">
+	      <tr><th>Description</th><th>Holds</th><th>Duration</th><th>Rest</th><th>Sets</th></tr>
+	    </tbody>
+	  </table>
+	</div>
       </div>
     </div>
-    <div class = "row">
-      <div class = "col-sm-6">
-	<img class = "img-rounded" src = "FingerboardNumbered1.jpg"/>
-      </div>
-    </div>
-    <div class = "col-sm-6">
-      <h1>Total workout</h1>
-      <table class = "table-bordered">
-	<tbody id = "total">
-	  <tr><th>Description</th><th>Holds</th><th>Duration</th><th>Rest</th><th>Sets</th></tr>
-	</tbody>
-      </table>
-    </div>
-    </div>
-    </div>s
     <script src="/js/app.js" type="text/javascript"></script>
   </body>
 </html>

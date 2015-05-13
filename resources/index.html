@@ -13,25 +13,29 @@
   </head>
   <body>
     <div class = "container">
-      <div class = "row">
+      <div class = "row heading">
 	<div class = "col-sm-12">
 	  <h1>Current exercise</h1>
-	  <p id = ":title"></p>
-	  <table class = "table-bordered" style = "width:100%">
-	    <tr>
-	      <th>Holds</th>
-	      <th>Duration</th>
-	      <th>Rest</th>
-	      <th>Repeat</th>
-	      <th>Total</th>
-	    </tr>
-	    <tr>
-	      <td id = ":holds"></td>
-	      <td><span id = ":done"/>/<span id = ":duration"/></td>
-	      <td><span id = ":rested"/>/<span id = ":rest"/></td>
-	      <td><span id = ":count"/>/<span id = ":repeat"/></td>
-	      <td id = ":total"></td>	  
-	    </tr>
+	  <p id = ":title" class = "lead"></p>
+	  <table class = "table">
+	    <thead>
+		  <tr>
+		    <th>Holds</th>
+		    <th>Duration</th>
+		    <th>Rest</th>
+		    <th>Repeat</th>
+		    <th>Total</th>
+		  </tr>
+	    </thead>
+	    <tbody>
+		  <tr>
+		    <td id = ":holds"></td>
+	          <td><span id = ":done"/>/<span id = ":duration"/></td>
+	    	  <td><span id = ":rested"/>/<span id = ":rest"/></td>
+	   	      <td><span id = ":count"/>/<span id = ":repeat"/></td>
+	      	<td id = ":total"></td>	  
+	      </tr>
+	    </tbody>
 	  </table>
 	</div>
       </div>
@@ -45,12 +49,23 @@
 	  <img class = "img-rounded" src = "FingerboardNumbered1.jpg"/>
 	</div>
       </div>
-      <div class = "row">
+      <div class = "row heading">
 	<div class = "col-sm-12">
 	  <h1>Total workout</h1>
-	  <table class = "table-bordered" style = "width:100%">
+	</div>
+	  <div class = "row">
+	 <div class = "col-sm-12">
+	  <table class = " table table-striped">
+	      <thead>
+	        <tr>
+	      	  <th>Description</th>
+	      	  <th>Holds</th>
+	      	  <th>Duration</th>
+	      	  <th>Rest</th>
+	      	  <th>Sets</th>
+	        </tr>
+	      </thead>
 	    <tbody id = "total">
-	      <tr><th>Description</th><th>Holds</th><th>Duration</th><th>Rest</th><th>Sets</th></tr>
 	    </tbody>
 	  </table>
 	</div>

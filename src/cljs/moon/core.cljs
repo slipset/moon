@@ -86,7 +86,7 @@
 (defn display-set [{:keys [rest duration repeat id] :as excercise}]
   (let [total (->minutes (* (+ rest duration) repeat))
         el (by-id (str "workout-" id))]
-    (aset (aget el "style") "color" "red")
+    (aset (aget el "class") "success")
     (dorun (map set-html (dissoc (assoc excercise :total total) :id)))))
     
 (defn create-td [parent workout key]

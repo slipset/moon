@@ -137,7 +137,7 @@
         completed-channel (chan)
         clock-channel (wall-clock)]
     (progressor clock-channel state-channel)
-    (onto-chan state-channel workout)))
+    (onto-chan state-channel workout))) 
 
 (defn main []
   (let [workout (map-indexed (fn [i coll] (assoc coll :id i)) workout)]

@@ -2,6 +2,8 @@
     (:require-macros [cljs.core.async.macros :refer [go go-loop]])
     (:require [moon.dom :refer [set-html! by-id listen beep ping]]
               [clojure.string :as string]
+              [goog.string :as gstring]
+              [goog.string.format]
               [cljs.core.async :refer
                [<! >!  timeout onto-chan chan put! take! alts! close!]]))
 
@@ -75,15 +77,15 @@
 (defn expand [{:keys [repeat] :as m}]
   (map-indexed  (fn [i coll] (assoc coll :count (inc i))) (take repeat (cycle [m]))))
 
-(defn set-html [[keyword val]]
-  (let [formatted-val (if (vector? val)
-                        (string/join ", " val)
-                        val)]
-    (set-html! (by-id (str keyword)) formatted-val)))
-  
 (defn ->minutes [seconds]
-  (str (int (/ seconds 60)) ":" (rem seconds 60)))
+  (gstring/format "%02d:%02d" (int (/ seconds 60))  (rem seconds 60)))
 
+(defn set-html [[keyword val]]
+  (set-html! (by-id (str keyword)) (cond (vector? val) (string/join ", " val)
+                                         (= :rest keyword) (->minutes val)
+                                         (= :duration keyword) (->minutes val)
+                                         :else val)))
+  
 (defmulti play :state)
 
 (defmethod play :almost [_]
@@ -102,13 +104,14 @@
           (= remaining 0)
           (assoc state :state :done))))
 
-(defn display-set [{:keys [rest duration repeat id] :as excercise} remaining]
+(defn display-set [{:keys [count activity rest duration repeat id] :as excercise} remaining]
   (let [total (->minutes (* (+ rest duration) repeat))
         el (by-id (str "workout-" id))]
     (play (done? remaining))
-    (.log js/console remaining)
-    (aset el "class" "success") 
-    (dorun (map set-html (dissoc (assoc excercise :total total) :id)))))
+    (.setAttribute el "class" "success")
+    (set-html! (by-id ":remaining") (->minutes remaining))
+    (set-html! (by-id ":type") (string/capitalize (name activity)))
+    (dorun (map set-html (dissoc (assoc excercise :total total) :id :activity)))))
     
 (defn create-td [parent workout key]
   (let [td (. js/document createElement "td")]
@@ -138,8 +141,8 @@
     (go-loop [i 0]
       (<! clock-chan)
       (if (<= i duration)
-        (dom-updater (dissoc (assoc state :done i) :clock-chan) (- duration i))
-        (dom-updater (dissoc (assoc state :rested (- i duration)) :clock-chan) (- (+ rest duration) i)))
+        (dom-updater (dissoc (assoc state :activity :hang) :clock-chan) (- duration i))
+        (dom-updater (dissoc (assoc state :activity :rest) :clock-chan) (- (+ rest duration) i)))
       (when (< i total)
         (recur (inc i))))))
 
@@ -160,7 +163,24 @@
     (progressor clock-channel state-channel)
     (onto-chan state-channel workout))) 
 
+(defn add-id [workout]
+  (map-indexed (fn [i coll] (assoc coll :id i)) workout))
+
+(defn do-workout []
+  (run (mapcat expand (add-id workout))))
+
+(defn show-workout []
+  (let [total (by-id "ok")
+        workout (by-id "workout")]
+    (aset (aget total "style") "display" "none")
+    (aset (aget workout "style") "display" "block")))
+
+(defn start-workout []
+  (show-workout)
+  (do-workout))
+        
 (defn main []
-  (let [workout (map-indexed (fn [i coll] (assoc coll :id i)) workout)]
-    (to-html workout)
-    (run (mapcat expand workout))))
+  (let [go-chan (listen (by-id "ok") "click")]
+    (to-html (add-id workout))
+    (go (<! go-chan) (start-workout))))
+             

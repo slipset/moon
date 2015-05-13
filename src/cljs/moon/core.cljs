@@ -80,11 +80,14 @@
 (defn ->minutes [seconds]
   (gstring/format "%02d:%02d" (int (/ seconds 60))  (rem seconds 60)))
 
+(defn format [keyword val]
+  (cond (vector? val) (string/join ", " val)
+        (= :rest keyword) (->minutes val)
+        (= :duration keyword) (->minutes val)
+        :else val))
+
 (defn set-html [[keyword val]]
-  (set-html! (by-id (str keyword)) (cond (vector? val) (string/join ", " val)
-                                         (= :rest keyword) (->minutes val)
-                                         (= :duration keyword) (->minutes val)
-                                         :else val)))
+  (set-html! (by-id (str keyword)) (format keyword val)))
   
 (defmulti play :state)
 
@@ -116,7 +119,7 @@
 (defn create-td [parent workout key]
   (let [td (. js/document createElement "td")]
     (. parent appendChild td)
-    (set-html! td (get workout key))))
+    (set-html! td (format key (get workout key)))))
   
 (defn create-row [parent workout]
   (let [tr (. js/document createElement "tr")]
@@ -173,7 +176,9 @@
   (let [total (by-id "ok")
         workout (by-id "workout")]
     (aset (aget total "style") "display" "none")
-    (aset (aget workout "style") "display" "block")))
+    (aset (aget workout "style") "display" "block")
+    (set-html! (by-id "total-header") "Remaining")
+    (.scroll js/window 0)))
 
 (defn start-workout []
   (show-workout)

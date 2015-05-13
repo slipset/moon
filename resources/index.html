@@ -12,6 +12,9 @@
     <link href="css/style.css" rel="stylesheet" type="text/css">
   </head>
   <body>
+    <audio id = "beep" src = "beep.mp3"/>
+    <audio id = "ping" src = "ping.mp3"/>    
+
     <div class = "container">
       <div class = "row">
 	<div class = "col-sm-12">
@@ -21,6 +24,7 @@
       <div style = "display:none" id = "workout">
 	<div class = "row heading">
 	  <div class = "col-sm-12">
+	    <h1>Excercise</h1>
 	    <p id = ":title" class = "lead"></p>
 	  </div>
 	</div>
@@ -57,7 +61,7 @@
       <div id = "total-workout">
 	<div class = "row heading">
 	  <div class = "col-sm-12">
-	    <h1>Total workout</h1>
+	    <h1 id = "total-header">Total workout</h1>
 	  </div>
 	</div>
 	<div class = "row">

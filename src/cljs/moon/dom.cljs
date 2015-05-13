@@ -18,3 +18,11 @@
 (defn html [el]
   (. el -innerHTML))
 
+(defn play [path] 
+  (.play (new js/Audio path)))
+
+(defn ping []
+  (play "ping.mp3"))
+
+(defn beep []
+  (play "beep.mp3"))

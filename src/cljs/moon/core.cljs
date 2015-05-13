@@ -1,6 +1,6 @@
 (ns moon.core
     (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-    (:require [moon.dom :refer [set-html! by-id listen]]
+    (:require [moon.dom :refer [set-html! by-id listen beep ping]]
               [clojure.string :as string]
               [cljs.core.async :refer
                [<! >!  timeout onto-chan chan put! take! alts! close!]]))
@@ -71,6 +71,7 @@
                }              
               ])
 
+
 (defn expand [{:keys [repeat] :as m}]
   (map-indexed  (fn [i coll] (assoc coll :count (inc i))) (take repeat (cycle [m]))))
 
@@ -83,9 +84,29 @@
 (defn ->minutes [seconds]
   (str (int (/ seconds 60)) ":" (rem seconds 60)))
 
-(defn display-set [{:keys [rest duration repeat id] :as excercise}]
+(defmulti play :state)
+
+(defmethod play :almost [_]
+  (beep))
+
+(defmethod play :done [_]
+  (ping))
+
+(defmethod play :default [s])
+
+
+(defn done? [remaining]
+  (let [state {:remaining remaining}]
+    (cond (and (< remaining 4) (> remaining 0))
+          (assoc state :state :almost)
+          (= remaining 0)
+          (assoc state :state :done))))
+
+(defn display-set [{:keys [rest duration repeat id] :as excercise} remaining]
   (let [total (->minutes (* (+ rest duration) repeat))
         el (by-id (str "workout-" id))]
+    (play (done? remaining))
+    (.log js/console remaining)
     (aset el "class" "success") 
     (dorun (map set-html (dissoc (assoc excercise :total total) :id)))))
     
@@ -117,8 +138,8 @@
     (go-loop [i 0]
       (<! clock-chan)
       (if (<= i duration)
-        (dom-updater (dissoc (assoc state :done i) :clock-chan))
-        (dom-updater (dissoc (assoc state :rested (- i duration)) :clock-chan)))
+        (dom-updater (dissoc (assoc state :done i) :clock-chan) (- duration i))
+        (dom-updater (dissoc (assoc state :rested (- i duration)) :clock-chan) (- (+ rest duration) i)))
       (when (< i total)
         (recur (inc i))))))
 

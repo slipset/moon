@@ -178,7 +178,7 @@
     (aset (aget total "style") "display" "none")
     (aset (aget workout "style") "display" "block")
     (set-html! (by-id "total-header") "Remaining")
-    (.scroll js/window 0)))
+    (.scroll js/window 0 0)))
 
 (defn start-workout []
   (show-workout)

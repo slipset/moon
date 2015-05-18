@@ -15,70 +15,70 @@
     (:import goog.History))
 
 (defonce app-state (atom {:workout [
-              {:title "Double armed dead hang on front three fingers open handed"
-               :holds [5]
-               :duration 6
-               :rest 120
-               :repeat 3
-               }
-              {:title "Double armed dead hang on middle two fingers open handed"
-               :holds [5]
-               :duration 6
-               :rest 90
-               :repeat 2
-               }
-              {:title "Hang open handed on three fingers on one arm, decrease resistance as required until hang can be completed."
-               :holds [2,5]
-               :duration 6
-               :rest 60
-               :repeat 6
-               }
-              {:title "Rest"
-               :duration 0
-               :rest 300
-               :repeat 1
-               }
-              {:title "Double armed hang on full crimp position, on a first joint edge"
-               :holds [1,5]
-               :duration 6
-               :rest 90
-               :repeat 3
-               }
-              {:title "Double armed hang on full crimp, this time slightly smaller than the last set, i.e., _ of the the finger tip."
-               :holds [3,4]
-               :duration 6
-               :rest 90
-               :repeat 3
-               }
-              {:title "Single arm hang on 1st joint edge, decrease resistance if required until hang can be completed."
-               :holds [1, 4, 5]
-               :duration 6
-               :rest 60
-               :repeat 6
-               }
-              {:title "Rest"
-               :duration 0
-               :rest 300
-               :repeat 1
-               }
-              {:title "Single arm lock off at 90 degrees"
-               :holds [1, 5]
-               :duration 8
-               :rest 120
-               :repeat 6
-               }
-              {:title "Two one armed pull ups"
-               :holds [1, 5]
-               :rest 120
-               :repeat 4
-               }              
-              {:title "Front levers"
-               :holds [1]
-               :duration 8
-               :rest 120
-               :repeat 3
-               }              
-              ]}))
+                                    {:title "Double armed dead hang on front three fingers open handed"
+                                     :holds [5]
+                                     :duration 6
+                                     :rest 120
+                                     :repeat 3
+                                     }
+                                    {:title "Double armed dead hang on middle two fingers open handed"
+                                     :holds [5]
+                                     :duration 6
+                                     :rest 90
+                                     :repeat 2
+                                     }
+                                    {:title "Hang open handed on three fingers on one arm, decrease resistance as required until hang can be completed."
+                                     :holds [2,5]
+                                     :duration 6
+                                     :rest 60
+                                     :repeat 6
+                                     }
+                                    {:title "Rest"
+                                     :duration 0
+                                     :rest 300
+                                     :repeat 1
+                                     }
+                                    {:title "Double armed hang on full crimp position, on a first joint edge"
+                                     :holds [1,5]
+                                     :duration 6
+                                     :rest 90
+                                     :repeat 3
+                                     }
+                                    {:title "Double armed hang on full crimp, this time slightly smaller than the last set, i.e., _ of the the finger tip."
+                                     :holds [3,4]
+                                     :duration 6
+                                     :rest 90
+                                     :repeat 3
+                                     }
+                                    {:title "Single arm hang on 1st joint edge, decrease resistance if required until hang can be completed."
+                                     :holds [1, 4, 5]
+                                     :duration 6
+                                     :rest 60
+                                     :repeat 6
+                                     }
+                                    {:title "Rest"
+                                     :duration 0
+                                     :rest 300
+                                     :repeat 1
+                                     }
+                                    {:title "Single arm lock off at 90 degrees"
+                                     :holds [1, 5]
+                                     :duration 8
+                                     :rest 120
+                                     :repeat 6
+                                     }
+                                    {:title "Two one armed pull ups"
+                                     :holds [1, 5]
+                                     :rest 120
+                                     :repeat 4
+                                     }              
+                                    {:title "Front levers"
+                                     :holds [1]
+                                     :duration 8
+                                     :rest 120
+                                     :repeat 3
+                                     }              
+                                    ]}))
 
 
 
@@ -96,7 +96,7 @@
 
 (defn set-html [[keyword val]]
   (set-html! (by-id (str keyword)) (format keyword val)))
-  
+
 (defmulti play :state)
 
 (defmethod play :almost [_]
@@ -123,22 +123,7 @@
     (set-html! (by-id ":remaining") (->minutes remaining))
     (set-html! (by-id ":type") (string/capitalize (name activity)))
     (dorun (map set-html (dissoc (assoc excercise :total total) :id :activity)))))
-    
-(defn create-td [parent workout key]
-  (let [td (. js/document createElement "td")]
-    (. parent appendChild td)
-    (set-html! td (format key (get workout key)))))
-  
-(defn create-row [parent workout]
-  (let [tr (. js/document createElement "tr")]
-    (set! (. tr -id) (str "workout-"(:id workout)))
-    (. parent appendChild tr)
-   (dorun (map (partial create-td tr workout ) [:title :holds :duration :rest :repeat]))))
 
-(defn to-html [workout]
-  (let [table (by-id "total")]
-    (dorun (map (partial create-row table) workout))))
-  
 (defn wall-clock []
   (let [output (chan)]
     (go-loop []
@@ -195,51 +180,72 @@
   (do-workout))
 
 #_(defroute  "/workout" []
-  (.log js/console "starting workout")
-  (start-workout))
+    (.log js/console "starting workout")
+    (start-workout))
 
 (defn show-root []
   (let [go-chan (listen (by-id "ok") "click")]
-    (to-html (swap! app-state update-in [:workout] add-id ))
+    (swap! app-state update-in [:workout] add-id )
     (go (<! go-chan) (start-workout))))
 
 #_(defroute "/" []
-  (.log js/console "showing root")
-  (show-root))
+    (.log js/console "showing root")
+    (show-root))
 
-
-;; Quick and dirty history configuration.
 
 (defn main []
   (show-root)
   (swap! app-state assoc :running-workout false)
   (swap! app-state assoc :total-duration 0)
   #_(let [h (History.)]
-    (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
-    (doto h (.setEnabled true)
-          (.setToken "/"))))
+      (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+      (doto h (.setEnabled true)
+            (.setToken "/"))))
 
 (defcomponent om-show-moon-board [data owner]
-  (render-state [_ _]
-                (dom/div {:class "row"}
-                         (dom/div {:class "col-sm-12"}
-                                  (dom/img {:class "img-rounded"
-                                            :src "FingerboardNumbered1.jpg"})))))
-                
-(defcomponent om-show-workout [data owner]
-  (will-mount [_]
-              (om/set-state! owner :n (:init data)))
-  (render-state [this {:keys [n]}]
-                (->om-show-moon-board {})))
+  (render [_]
+          (dom/div {:class "row"}
+                   (dom/div {:class "col-sm-12"}
+                            (dom/img {:class "img-rounded"
+                                      :src "FingerboardNumbered1.jpg"})))))
 
-;;(dom/span (str "Count: " n))
-;;(dom/button
-;;        {:on-click #(om/set-state! owner :n (inc n))}
-;;        "+")
-;;      (dom/button
-;;        {:on-click #(om/set-state! owner :n (dec n))}
-;;        "-"))))
+(defcomponent om-show-workout-detail [{:keys [id title holds duration rest repeat]} owner]
+  (render [_]
+          (dom/tr {:id (str "workout-" id)}
+                  (dom/td title)
+                  (dom/td (string/join ", " holds))
+                  (dom/td (->minutes duration))
+                  (dom/td (->minutes rest))
+                  (dom/td repeat))))
+
+(defcomponent om-show-total-workout [data owner]
+  (render [_]
+          (.log js/console (pr-str data))
+          (dom/table {:class "table table-striped"}
+                     (dom/tbody
+                      (dom/tr
+                       (dom/th "Description")
+                       (dom/th "Holds")
+                       (dom/th "Duration")
+                       (dom/th "Rest")
+                       (dom/th "Sets"))
+                     (map ->om-show-workout-detail data)))))
+
+(defcomponent om-show-workout [data owner]
+  (render [_]
+          (when-not (:running-workout data)
+            (dom/div
+             (->om-show-moon-board {})
+             (dom/div {:class "row heading"}
+                      (dom/div {:class "col-sm-12"}
+                               (dom/h1 "Total workout")))
+             (dom/div {:class "row"}
+                      (dom/div {:class "col-sm-12"}
+                               (dom/button {:class "btn block btn-block primary btn-primary"
+                                            :id "ok"}
+                                           "Go!")))
+             (->om-show-total-workout (:workout data))))))
 
 (om/root om-show-workout app-state
          {:target (by-id "app")})
-             
+

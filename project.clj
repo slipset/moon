@@ -1,13 +1,13 @@
 (defproject moon "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+   :url "http://example.com/FIXME"
+   :license {:name "Eclipse Public License"
+             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :source-paths ["src/clj"]
-:repl-options {:timeout 200000} ;; Defaults to 30000 (30 seconds)
+   :source-paths ["src/clj"]
+   :repl-options {:timeout 200000} ;; Defaults to 30000 (30 seconds)
 
-  :test-paths ["spec/clj"]
+    :test-paths ["spec/clj"]
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2511" :scope "provided"]
@@ -16,6 +16,8 @@
                  [ring/ring-defaults "0.1.3"]
                  [compojure "1.3.1"]
                  [enlive "1.1.5"]
+                 [secretary "1.2.3"]
+                 [prismatic/om-tools "0.3.11"]
                  [om "0.8.0-rc1"]
                  [environ "1.0.0"]]
 

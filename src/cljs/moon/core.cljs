@@ -2,12 +2,19 @@
     (:require-macros [cljs.core.async.macros :refer [go go-loop]])
     (:require [moon.dom :refer [set-html! by-id listen beep ping]]
               [clojure.string :as string]
+              [om.core :as om]
+              [om-tools.core :refer-macros [defcomponent]]
+              [om-tools.dom :as dom :include-macros true]
               [goog.string :as gstring]
               [goog.string.format]
+              [goog.events :as events]
+              [goog.history.EventType :as EventType]
+              [secretary.core :as secretary :refer-macros [defroute]]
               [cljs.core.async :refer
-               [<! >!  timeout onto-chan chan put! take! alts! close!]]))
+               [<! >!  timeout onto-chan chan put! take! alts! close!]])
+    (:import goog.History))
 
-(def workout [
+(defonce app-state (atom {:workout [
               {:title "Double armed dead hang on front three fingers open handed"
                :holds [5]
                :duration 6
@@ -71,7 +78,8 @@
                :rest 120
                :repeat 3
                }              
-              ])
+              ]}))
+
 
 
 (defn expand [{:keys [repeat] :as m}]
@@ -99,7 +107,6 @@
 
 (defmethod play :default [s])
 
-
 (defn done? [remaining]
   (let [state {:remaining remaining}]
     (cond (and (< remaining 4) (> remaining 0))
@@ -108,6 +115,7 @@
           (assoc state :state :done))))
 
 (defn display-set [{:keys [count activity rest duration repeat id] :as excercise} remaining]
+  (swap! app-state assoc :current-excercise (assoc excercise :remaining remaining))
   (let [total (->minutes (* (+ rest duration) repeat))
         el (by-id (str "workout-" id))]
     (play (done? remaining))
@@ -136,6 +144,7 @@
     (go-loop []
       (<! (timeout 1000))
       (when (>! output :tick)
+        (swap! app-state update-in [:total-duration] inc)
         (recur)))
     output))
 
@@ -170,7 +179,7 @@
   (map-indexed (fn [i coll] (assoc coll :id i)) workout))
 
 (defn do-workout []
-  (run (mapcat expand (add-id workout))))
+  (run (mapcat expand (add-id (:workout @app-state)))))
 
 (defn show-workout []
   (let [total (by-id "ok")
@@ -181,11 +190,56 @@
     (.scroll js/window 0 0)))
 
 (defn start-workout []
+  (swap! app-state assoc :running-workout true)
   (show-workout)
   (do-workout))
-        
-(defn main []
+
+#_(defroute  "/workout" []
+  (.log js/console "starting workout")
+  (start-workout))
+
+(defn show-root []
   (let [go-chan (listen (by-id "ok") "click")]
-    (to-html (add-id workout))
+    (to-html (swap! app-state update-in [:workout] add-id ))
     (go (<! go-chan) (start-workout))))
+
+#_(defroute "/" []
+  (.log js/console "showing root")
+  (show-root))
+
+
+;; Quick and dirty history configuration.
+
+(defn main []
+  (show-root)
+  (swap! app-state assoc :running-workout false)
+  (swap! app-state assoc :total-duration 0)
+  #_(let [h (History.)]
+    (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+    (doto h (.setEnabled true)
+          (.setToken "/"))))
+
+(defcomponent om-show-moon-board [data owner]
+  (render-state [_ _]
+                (dom/div {:class "row"}
+                         (dom/div {:class "col-sm-12"}
+                                  (dom/img {:class "img-rounded"
+                                            :src "FingerboardNumbered1.jpg"})))))
+                
+(defcomponent om-show-workout [data owner]
+  (will-mount [_]
+              (om/set-state! owner :n (:init data)))
+  (render-state [this {:keys [n]}]
+                (->om-show-moon-board {})))
+
+;;(dom/span (str "Count: " n))
+;;(dom/button
+;;        {:on-click #(om/set-state! owner :n (inc n))}
+;;        "+")
+;;      (dom/button
+;;        {:on-click #(om/set-state! owner :n (dec n))}
+;;        "-"))))
+
+(om/root om-show-workout app-state
+         {:target (by-id "app")})
              

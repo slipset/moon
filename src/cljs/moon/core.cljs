@@ -1,12 +1,8 @@
 (ns moon.core
     (:require-macros [cljs.core.async.macros :refer [go go-loop]])
     (:require [moon.dom :refer [set-html! by-id listen beep ping]]
-              [clojure.string :as string]
-              [om.core :as om]
-              [om-tools.core :refer-macros [defcomponent]]
-              [om-tools.dom :as dom :include-macros true]
-              [goog.string :as gstring]
-              [goog.string.format]
+              [cljs.moon.components :as components]
+              [om.core :as om]              
               [goog.events :as events]
               [goog.history.EventType :as EventType]
               [secretary.core :as secretary :refer-macros [defroute]]
@@ -81,21 +77,8 @@
                                     ]}))
 
 
-
 (defn expand [{:keys [repeat] :as m}]
   (map-indexed  (fn [i coll] (assoc coll :count (inc i))) (take repeat (cycle [m]))))
-
-(defn ->minutes [seconds]
-  (gstring/format "%02d:%02d" (int (/ seconds 60))  (rem seconds 60)))
-
-(defn format [keyword val]
-  (cond (vector? val) (string/join ", " val)
-        (= :rest keyword) (->minutes val)
-        (= :duration keyword) (->minutes val)
-        :else val))
-
-(defn set-html [[keyword val]]
-  (set-html! (by-id (str keyword)) (format keyword val)))
 
 (defmulti play :state)
 
@@ -114,16 +97,6 @@
           (= remaining 0)
           (assoc state :state :done))))
 
-(defn display-set [{:keys [count activity rest duration repeat id] :as excercise} remaining]
-  (swap! app-state assoc :current-excercise (assoc excercise :remaining remaining))
-  (let [total (->minutes (* (+ rest duration) repeat))
-        el (by-id (str "workout-" id))]
-    (play (done? remaining))
-    (.setAttribute el "class" "success")
-    (set-html! (by-id ":remaining") (->minutes remaining))
-    (set-html! (by-id ":type") (string/capitalize (name activity)))
-    (dorun (map set-html (dissoc (assoc excercise :total total) :id :activity)))))
-
 (defn wall-clock []
   (let [output (chan)]
     (go-loop []
@@ -133,24 +106,28 @@
         (recur)))
     output))
 
-(defn count-down [{:keys [duration rest clock-chan title] :as state} dom-updater]
+(defn count-down [{:keys [duration rest clock-chan title] :as state}]
   (let [total (+ duration rest)]
     (go-loop [i 0]
       (<! clock-chan)
-      (if (<= i duration)
-        (dom-updater (dissoc (assoc state :activity :hang) :clock-chan) (- duration i))
-        (dom-updater (dissoc (assoc state :activity :rest) :clock-chan) (- (+ rest duration) i)))
+      (swap! app-state assoc :current-exercise
+             (merge state
+                    (if (<= i duration)
+                      {:activity :hang :remaining (- duration i)}
+                      {:activity :rest :remaining (- (+ rest duration) i)})))
+      (play (done? (get-in @app-state   [:current-exercise :remaining])))
       (when (< i total)
         (recur (inc i))))))
-
-(defn do-state [{:keys [state] :as current-state}]
-  (count-down current-state display-set))
 
 (defn progressor [clock-chan states-ch]
   (go-loop []
     (let [current-state (<! states-ch)]
       (when current-state
-        (<! (do-state (assoc current-state :clock-chan clock-chan)))
+        (.log js/console (pr-str current-state))
+        (when (= (:count current-state) 1)
+          (swap! app-state assoc :workout (rest (:workout @app-state))))
+        (<! (count-down (assoc current-state :clock-chan clock-chan)))
+        
         (recur)))))
 
 (defn run [workout]
@@ -166,17 +143,8 @@
 (defn do-workout []
   (run (mapcat expand (add-id (:workout @app-state)))))
 
-(defn show-workout []
-  (let [total (by-id "ok")
-        workout (by-id "workout")]
-    (aset (aget total "style") "display" "none")
-    (aset (aget workout "style") "display" "block")
-    (set-html! (by-id "total-header") "Remaining")
-    (.scroll js/window 0 0)))
-
 (defn start-workout []
   (swap! app-state assoc :running-workout true)
-  (show-workout)
   (do-workout))
 
 #_(defroute  "/workout" []
@@ -192,7 +160,6 @@
     (.log js/console "showing root")
     (show-root))
 
-
 (defn main []
   (show-root)
   (swap! app-state assoc :running-workout false)
@@ -202,50 +169,6 @@
       (doto h (.setEnabled true)
             (.setToken "/"))))
 
-(defcomponent om-show-moon-board [data owner]
-  (render [_]
-          (dom/div {:class "row"}
-                   (dom/div {:class "col-sm-12"}
-                            (dom/img {:class "img-rounded"
-                                      :src "FingerboardNumbered1.jpg"})))))
-
-(defcomponent om-show-workout-detail [{:keys [id title holds duration rest repeat]} owner]
-  (render [_]
-          (dom/tr {:id (str "workout-" id)}
-                  (dom/td title)
-                  (dom/td (string/join ", " holds))
-                  (dom/td (->minutes duration))
-                  (dom/td (->minutes rest))
-                  (dom/td repeat))))
-
-(defcomponent om-show-total-workout [data owner]
-  (render [_]
-          (.log js/console (pr-str data))
-          (dom/table {:class "table table-striped"}
-                     (dom/tbody
-                      (dom/tr
-                       (dom/th "Description")
-                       (dom/th "Holds")
-                       (dom/th "Duration")
-                       (dom/th "Rest")
-                       (dom/th "Sets"))
-                     (map ->om-show-workout-detail data)))))
-
-(defcomponent om-show-workout [data owner]
-  (render [_]
-          (when-not (:running-workout data)
-            (dom/div
-             (->om-show-moon-board {})
-             (dom/div {:class "row heading"}
-                      (dom/div {:class "col-sm-12"}
-                               (dom/h1 "Total workout")))
-             (dom/div {:class "row"}
-                      (dom/div {:class "col-sm-12"}
-                               (dom/button {:class "btn block btn-block primary btn-primary"
-                                            :id "ok"}
-                                           "Go!")))
-             (->om-show-total-workout (:workout data))))))
-
-(om/root om-show-workout app-state
+(om/root components/om-show-workout app-state
          {:target (by-id "app")})
 

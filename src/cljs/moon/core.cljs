@@ -106,28 +106,29 @@
         (recur)))
     output))
 
-(defn count-down [{:keys [duration rest clock-chan title] :as state}]
+(defn update-current [{:keys [duration rest] :as exercise} seconds]
+  (merge exercise
+         (if (<= seconds duration)
+           {:activity :hang :remaining (- duration seconds)}
+           {:activity :rest :remaining (- (+ rest duration) seconds)})))
+
+(defn count-down [{:keys [duration rest clock-chan title] :as exercise}]
   (let [total (+ duration rest)]
+    (when (= (:count exercise) 1)
+      (swap! app-state assoc :workout (clojure.core/rest (:workout @app-state))))
     (go-loop [i 0]
       (<! clock-chan)
-      (swap! app-state assoc :current-exercise
-             (merge state
-                    (if (<= i duration)
-                      {:activity :hang :remaining (- duration i)}
-                      {:activity :rest :remaining (- (+ rest duration) i)})))
-      (play (done? (get-in @app-state   [:current-exercise :remaining])))
-      (when (< i total)
-        (recur (inc i))))))
+      (let [current-exercise (update-current exercise i)]
+        (play (done? (:remaining current-exercise)))  
+        (swap! app-state assoc :current-exercise current-exercise)
+        (when (< i total)
+          (recur (inc i)))))))
 
 (defn progressor [clock-chan states-ch]
   (go-loop []
     (let [current-state (<! states-ch)]
       (when current-state
-        (.log js/console (pr-str current-state))
-        (when (= (:count current-state) 1)
-          (swap! app-state assoc :workout (rest (:workout @app-state))))
         (<! (count-down (assoc current-state :clock-chan clock-chan)))
-        
         (recur)))))
 
 (defn run [workout]

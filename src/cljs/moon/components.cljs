@@ -40,13 +40,15 @@
                               (dom/td (->minutes rest))
                               (dom/td (str count "/" repeat)))))))
 
-(defcomponent om-show-current-exercise [{:keys [id title holds duration rest repeat remaining activity] :as data} owner]
+(defcomponent om-show-current-exercise [{:keys [id title holds duration rest repeat remaining activity count] :as data} owner]
   (render [_]
           (dom/div
            (dom/div {:class "row heading"}
                     (dom/div {:class "col-sm-12"}
                              (dom/h1 "Excercise")
-                             (dom/p {:class "lead"} title)))
+                             (dom/p {:class "lead"} (if-not (= count repeat)
+                                                      title
+                                                      "Prepare for the next exercise"))))
            (dom/div {:class "row"}
                     (dom/div {:class "col-sm-12"}
                              (dom/div {:class "block btn-block primary"}

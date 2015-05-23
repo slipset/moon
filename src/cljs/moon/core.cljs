@@ -135,8 +135,13 @@
   (let [state-channel (chan)
         completed-channel (chan)
         clock-channel (wall-clock)]
-    (progressor clock-channel state-channel)
-    (onto-chan state-channel workout))) 
+    (go (<! (go-loop [i 10]
+              (<! clock-channel)
+              (play (done? i))
+              (when (> i 0)
+                (recur (dec i)))))
+        (progressor clock-channel state-channel)
+        (onto-chan state-channel workout))))
 
 (defn add-id [workout]
   (map-indexed (fn [i coll] (assoc coll :id i)) workout))

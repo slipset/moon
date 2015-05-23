@@ -31,7 +31,7 @@
                                      }
                                     {:title "Rest"
                                      :duration 0
-                                     :rest 300
+                                     :rest 240
                                      :repeat 1
                                      }
                                     {:title "Double armed hang on full crimp position, on a first joint edge"
@@ -54,7 +54,7 @@
                                      }
                                     {:title "Rest"
                                      :duration 0
-                                     :rest 300
+                                     :rest 240
                                      :repeat 1
                                      }
                                     {:title "Single arm lock off at 90 degrees"

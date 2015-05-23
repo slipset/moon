@@ -92,7 +92,9 @@
 
 (defn done? [remaining]
   (let [state {:remaining remaining}]
-    (cond (and (< remaining 4) (> remaining 0))
+    (cond (= remaining 30) (assoc :state :almost)
+          (= remaining 10) (assoc :state :almost)
+          (and (< remaining 4) (> remaining 0))
           (assoc state :state :almost)
           (= remaining 0)
           (assoc state :state :done))))

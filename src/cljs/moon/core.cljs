@@ -10,7 +10,10 @@
                [<! >!  timeout onto-chan chan put! take! alts! close!]])
     (:import goog.History))
 
-(defonce app-state (atom {:workout [
+(defonce app-state (atom {:running-workout false
+                          :total-duration 0
+                          :current-exercise {}
+                          :workout [
                                     {:title "Double armed dead hang on front three fingers open handed"
                                      :holds [5]
                                      :duration 6
@@ -65,6 +68,7 @@
                                      }
                                     {:title "Two one armed pull ups"
                                      :holds [1, 5]
+                                     :duration 0
                                      :rest 120
                                      :repeat 4
                                      }              
@@ -90,10 +94,16 @@
 
 (defmethod play :default [s])
 
+(defn exercise-duration [{:keys [rest repeat duration]}]
+  (* (+ rest duration) repeat))
+
+(defn total-duration [workout]
+  (reduce + (map exercise-duration workout)))
+
 (defn done? [remaining]
   (let [state {:remaining remaining}]
-    (cond (= remaining 30) (assoc :state :almost)
-          (= remaining 10) (assoc :state :almost)
+    (cond (= remaining 30) (assoc state :state :almost)
+          (= remaining 10) (assoc state :state :almost)
           (and (< remaining 4) (> remaining 0))
           (assoc state :state :almost)
           (= remaining 0)
@@ -104,7 +114,6 @@
     (go-loop []
       (<! (timeout 1000))
       (when (>! output :tick)
-        (swap! app-state update-in [:total-duration] inc)
         (recur)))
     output))
 
@@ -117,12 +126,15 @@
 (defn count-down [{:keys [duration rest clock-chan title] :as exercise}]
   (let [total (+ duration rest)]
     (when (= (:count exercise) 1)
-      (swap! app-state assoc :workout (clojure.core/rest (:workout @app-state))))
+      (om/transact! (om/root-cursor app-state) :workout clojure.core/rest))
     (go-loop [i 0]
       (<! clock-chan)
       (let [current-exercise (update-current exercise i)]
-        (play (done? (:remaining current-exercise)))  
-        (swap! app-state assoc :current-exercise current-exercise)
+        (play (done? (:remaining current-exercise)))
+        (om/transact! (om/root-cursor app-state) (fn [s]
+                                                   (assoc (assoc s :current-exercise
+                                                                 current-exercise)
+                                                          :total-duration (dec (:total-duration s)))))
         (when (< i total)
           (recur (inc i)))))))
 
@@ -152,7 +164,9 @@
   (run (mapcat expand (add-id (:workout @app-state)))))
 
 (defn start-workout []
-  (swap! app-state assoc :running-workout true)
+  (om/update! (om/root-cursor app-state) [:running-workout] true)
+  (om/update! (om/root-cursor app-state) [:current-exercise] (assoc (first (:workout @app-state))
+                                                                    :remaining 6 :activity :ready))
   (do-workout))
 
 #_(defroute  "/workout" []
@@ -161,7 +175,7 @@
 
 (defn show-root []
   (let [go-chan (listen (by-id "ok") "click")]
-    (swap! app-state update-in [:workout] add-id )
+
     (go (<! go-chan) (start-workout))))
 
 #_(defroute "/" []
@@ -169,14 +183,17 @@
     (show-root))
 
 (defn main []
+  (swap! app-state update-in [:workout] add-id )
+
+  (om/root components/show-workout app-state {:target (by-id "app")})
   (show-root)
-  (swap! app-state assoc :running-workout false)
-  (swap! app-state assoc :total-duration 0)
+  (om/update! (om/root-cursor app-state) [:running-workout] false)
+  (om/update! (om/root-cursor app-state) [:total-duration] (total-duration (:workout @app-state)))
+  
   #_(let [h (History.)]
       (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
       (doto h (.setEnabled true)
             (.setToken "/"))))
 
-(om/root components/om-show-workout app-state
-         {:target (by-id "app")})
+
 

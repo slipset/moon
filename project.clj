@@ -18,6 +18,7 @@
                  [enlive "1.1.5"]
                  [secretary "1.2.3"]
                  [prismatic/om-tools "0.3.11"]
+                 [racehub/om-bootstrap "0.5.0"]
                  [om "0.8.0-rc1"]
                  [environ "1.0.0"]]
 

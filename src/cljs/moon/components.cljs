@@ -95,8 +95,8 @@
                    (when (seq current)
                      (->current-exercise current))
                    (d/div {:class "row heading"}
-                          (d/h1 {:class "col-xs-8"} "Total")
-                          (d/h1 {:class "col-xs-4"} (->hours (:total-duration data))))
+                          (d/h1 {:class "col-xs-6"} "Total")
+                          (d/h1 {:class "col-xs-6"} (->hours (:total-duration data))))
                    
                    (->go-button (:running-workout data))
                    (->total-workout (:workout data))))))

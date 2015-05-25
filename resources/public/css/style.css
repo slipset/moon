@@ -53,3 +53,22 @@
     width: 100%;
     text-align: center
 }
+
+h1.exercise {
+    margin-bottom: 0px;
+}
+
+.progress {
+    width: 95%;
+    margin-left: 15px;
+}
+
+.exercise .progress {
+    background-color: #5cb85c;
+    background-image: none;
+    height: 2px;
+    width: 98%;
+    margin-top: -3px;
+    margin-left: 5px;
+    margin-right: 5px;    
+}

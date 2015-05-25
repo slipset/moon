@@ -103,6 +103,7 @@
 (defn done? [remaining]
   (let [state {:remaining remaining}]
     (cond (= remaining 30) (assoc state :state :almost)
+          (= remaining 20) (assoc state :state :almost)
           (= remaining 10) (assoc state :state :almost)
           (and (< remaining 4) (> remaining 0))
           (assoc state :state :almost)
@@ -120,8 +121,10 @@
 (defn update-current [{:keys [duration rest] :as exercise} seconds]
   (merge exercise
          (if (<= seconds duration)
-           {:activity :hang :remaining (- duration seconds)}
-           {:activity :rest :remaining (- (+ rest duration) seconds)})))
+           {:activity :hang :remaining (- duration seconds)
+            :progress (/ seconds duration) }
+           {:activity :rest :remaining (- (+ rest duration) seconds)
+            :progress (/ seconds (+ rest duration))})))
 
 (defn count-down [{:keys [duration rest clock-chan title] :as exercise}]
   (let [total (+ duration rest)]
@@ -134,7 +137,7 @@
         (om/transact! (om/root-cursor app-state) (fn [s]
                                                    (assoc (assoc s :current-exercise
                                                                  current-exercise)
-                                                          :total-duration (dec (:total-duration s)))))
+                                                          :remaining (dec (:remaining s)))))
         (when (< i total)
           (recur (inc i)))))))
 
@@ -183,12 +186,13 @@
     (show-root))
 
 (defn main []
-  (swap! app-state update-in [:workout] add-id )
-
-  (om/root components/show-workout app-state {:target (by-id "app")})
-  (show-root)
-  (om/update! (om/root-cursor app-state) [:running-workout] false)
-  (om/update! (om/root-cursor app-state) [:total-duration] (total-duration (:workout @app-state)))
+  (let [total-duration (total-duration (:workout @app-state))]
+        (swap! app-state update-in [:workout] add-id )
+        (om/root components/show-workout app-state {:target (by-id "app")})
+        (show-root)
+        (om/update! (om/root-cursor app-state) [:running-workout] false)
+        (om/update! (om/root-cursor app-state) [:total-duration] total-duration)
+        (om/update! (om/root-cursor app-state) [:remaining] total-duration))
   
   #_(let [h (History.)]
       (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

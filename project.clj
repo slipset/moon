@@ -52,6 +52,7 @@
 
                    :figwheel {:http-server-root "public"
                               :server-port 3449
+                              :on-jsload moon.core/on-reload
                               :css-dirs ["resources/public/css"]}
 
                    :env {:is-dev true}

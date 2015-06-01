@@ -100,14 +100,12 @@
                    (when (seq current)
                      (->current-exercise current))
                    (d/div {:class "row"}
-                          
                           (d/h1 {:class "col-xs-12"}
                                 (r/label {:class "btn-block"} (str (if (seq current)
                                                 "Remaining"
                                        "Total")) " " (->hours (:remaining data))))
                           (when (seq current)
-                            (pb/progress-bar {
-                                              :min 0
+                            (pb/progress-bar {:min 0
                                               :max 1
                                               :now (/ (- (:total-duration data)
                                                          (:remaining data))

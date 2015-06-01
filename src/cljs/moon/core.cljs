@@ -148,15 +148,19 @@
         (<! (count-down (assoc current-state :clock-chan clock-chan)))
         (recur)))))
 
+(defn pre-workout-countdown [clock-channel]
+  (go-loop [i 10]
+    (<! clock-channel)
+    (play (done? i))
+    (when (> i 0)
+      (om/transact! (om/root-cursor app-state) [:current-exercise :remaining] dec)
+      (recur (dec i)))))
+
 (defn run [workout]
   (let [state-channel (chan)
         completed-channel (chan)
         clock-channel (wall-clock)]
-    (go (<! (go-loop [i 10]
-              (<! clock-channel)
-              (play (done? i))
-              (when (> i 0)
-                (recur (dec i)))))
+    (go (<! (pre-workout-countdown clock-channel))
         (progressor clock-channel state-channel)
         (onto-chan state-channel workout))))
 
@@ -169,7 +173,7 @@
 (defn start-workout []
   (om/update! (om/root-cursor app-state) [:running-workout] true)
   (om/update! (om/root-cursor app-state) [:current-exercise] (assoc (first (:workout @app-state))
-                                                                    :remaining 6 :activity :ready))
+                                                                    :remaining 10 :activity :ready))
   (do-workout))
 
 #_(defroute  "/workout" []
@@ -178,7 +182,6 @@
 
 (defn show-root []
   (let [go-chan (listen (by-id "ok") "click")]
-
     (go (<! go-chan) (start-workout))))
 
 #_(defroute "/" []
@@ -199,5 +202,6 @@
       (doto h (.setEnabled true)
             (.setToken "/"))))
 
-
+(defn on-reload []
+  (close! wall-clock))
 

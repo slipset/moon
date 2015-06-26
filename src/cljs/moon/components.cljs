@@ -3,6 +3,7 @@
               [goog.string :as gstring]
               [goog.string.format]
               [om.core :as om]
+              [moon.dom :refer [by-id listen]]
               [om-bootstrap.button :as b]
               [om-bootstrap.random :as r]
               [om-bootstrap.table :as t]
@@ -113,15 +114,17 @@
                    
                    
                    (->go-button (:running-workout data))
-                   (->total-workout (:workout data))))))
+                   (->total-workout (:workout data)))))
+  (did-mount [_]
+             (assoc data :ok-channel (listen (by-id "ok") "click"))))
 
 (defcomponent show-workouts [workouts owner]
   (render [_]
-            (.log js/console (pr-str workouts))
               (d/div {} "foo")
               (d/div {:class "row"}
                      (d/ul {}
-                           (map #(d/li {} (name %1)) (keys workouts))))))
+                           (map #(d/li {}
+                                       (b/button  {:id (name %1)} (name %1))) (keys workouts))))))
 
 (defcomponent app [data owner]
   (render [_]

@@ -9,7 +9,9 @@
 
 (defn listen [el type]
   (let [out (chan)]
-    (events/listen el type (fn [e] (put! out e)))
+    (events/listen el type (fn [e]  (put! out {:id (aget el "id")
+                                               :event e
+                                               :type type})))
     out))
 
 (defn set-html! [el content]

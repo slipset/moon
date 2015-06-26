@@ -223,6 +223,7 @@
     (start-workout))
 
 (defn show-root [workout]
+  (.log js/console (pr-str (by-id "ok")))
   (let [go-chan (listen (by-id "ok") "click")]
     (go (<! go-chan) (start-workout workout))))
 
@@ -230,20 +231,23 @@
     (.log js/console "showing root")
     (show-root))
 
-(defn choose-workout [workout-key]
-  (om/update! (om/root-cursor app-state) [:workout] (get-in @app-state [:workouts workout-key])))
+
+(defn listen-for-workout [workouts]
+  (go
+    (let [chans (map #(listen (by-id (name %1)) "click") (keys workouts))
+          [val port] (alts! chans)
+          workout ((keyword (:id val)) workouts)
+          total-duration (total-duration workout)]
+      (om/transact! (om/root-cursor app-state) (fn [s] (merge s {:workout workout
+                                                                 :running-workout false
+                                                                 :total-duration total-duration
+                                                                 :remaining total-duration} )))
+      (show-root workout))))
 
 (defn main []
-  (let [workout (get-in @app-state [:workouts :transgression])
-        total-duration (total-duration workout)]
-;    (swap! app-state assoc :workout workout)
-    (swap! app-state update-in [:workouts :moon] add-id )
-    (om/root components/app app-state {:target (by-id "app")})
-    (show-root workout)
-
-    (om/update! (om/root-cursor app-state) [:running-workout] false)
-    (om/update! (om/root-cursor app-state) [:total-duration] total-duration)
-    (om/update! (om/root-cursor app-state) [:remaining] total-duration))
+  (swap! app-state update-in [:workouts :moon] add-id )
+  (om/root components/app app-state {:target (by-id "app")})
+  (listen-for-workout (:workouts @app-state))
   
   #_(let [h (History.)]
       (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

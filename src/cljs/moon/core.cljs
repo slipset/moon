@@ -13,73 +13,115 @@
 (defonce app-state (atom {:running-workout false
                           :total-duration 0
                           :current-exercise {}
-                          :workout [
-                                    {:title "Double armed dead hang on front three fingers open handed"
-                                     :holds [5]
-                                     :duration 6
-                                     :rest 120
-                                     :repeat 3
-                                     }
-                                    {:title "Double armed dead hang on middle two fingers open handed"
-                                     :holds [5]
-                                     :duration 6
-                                     :rest 90
-                                     :repeat 2
-                                     }
-                                    {:title "Hang open handed on three fingers on one arm, decrease resistance as required until hang can be completed."
-                                     :holds [2,5]
-                                     :duration 6
-                                     :rest 60
-                                     :repeat 6
-                                     }
-                                    {:title "Rest"
-                                     :duration 0
-                                     :rest 240
-                                     :repeat 1
-                                     }
-                                    {:title "Double armed hang on full crimp position, on a first joint edge"
-                                     :holds [1,5]
-                                     :duration 6
-                                     :rest 90
-                                     :repeat 3
-                                     }
-                                    {:title "Double armed hang on full crimp, this time slightly smaller than the last set, i.e., _ of the the finger tip."
-                                     :holds [3,4]
-                                     :duration 6
-                                     :rest 90
-                                     :repeat 3
-                                     }
-                                    {:title "Single arm hang on 1st joint edge, decrease resistance if required until hang can be completed."
-                                     :holds [1, 4, 5]
-                                     :duration 6
-                                     :rest 60
-                                     :repeat 6
-                                     }
-                                    {:title "Rest"
-                                     :duration 0
-                                     :rest 240
-                                     :repeat 1
-                                     }
-                                    {:title "Single arm lock off at 90 degrees"
-                                     :holds [1, 5]
-                                     :duration 8
-                                     :rest 120
-                                     :repeat 6
-                                     }
-                                    {:title "Two one armed pull ups"
-                                     :holds [1, 5]
-                                     :duration 0
-                                     :rest 120
-                                     :repeat 4
-                                     }              
-                                    {:title "Front levers"
-                                     :holds [1]
-                                     :duration 8
-                                     :rest 120
-                                     :repeat 3
-                                     }              
-                                    ]}))
-
+                          :workout nil
+                          :workouts {
+                                     :transgression [
+                                                     {:title "Hang"
+                                                      :holds []
+                                                      :duration 10
+                                                      :repeat 2
+                                                      :rest 30
+                                                      }
+                                                     {:title "Rest"
+                                                      :duration 0
+                                                      :rest 180
+                                                      :repeat 1
+                                                      }
+                                                     {:title "Hang"
+                                                      :holds []
+                                                      :duration 10
+                                                      :repeat 2
+                                                      :rest 30
+                                                      }
+                                                     {:title "Rest"
+                                                      :duration 0
+                                                      :rest 180
+                                                      :repeat 1
+                                                      }
+                                                     {:title "Hang"
+                                                      :holds []
+                                                      :duration 10
+                                                      :repeat 2
+                                                      :rest 30
+                                                      }
+                                                     {:title "Rest"
+                                                      :duration 0
+                                                      :rest 180
+                                                      :repeat 1
+                                                      }
+                                                     {:title "Hang"
+                                                      :holds []
+                                                      :duration 10
+                                                      :repeat 2
+                                                      :rest 30
+                                                      }
+                                                     ]
+                                     :moon [
+                                               {:title "Double armed dead hang on front three fingers open handed"
+                                                :holds [5]
+                                                :duration 6
+                                                :rest 120
+                                                :repeat 3
+                                                }
+                                               {:title "Double armed dead hang on middle two fingers open handed"
+                                                :holds [5]
+                                                :duration 6
+                                                :rest 90
+                                                :repeat 2
+                                                }
+                                               {:title "Hang open handed on three fingers on one arm, decrease resistance as required until hang can be completed."
+                                                :holds [2,5]
+                                                :duration 6
+                                                :rest 60
+                                                :repeat 6
+                                                }
+                                               {:title "Rest"
+                                                :duration 0
+                                                :rest 240
+                                                :repeat 1
+                                                }
+                                               {:title "Double armed hang on full crimp position, on a first joint edge"
+                                                :holds [1,5]
+                                                :duration 6
+                                                :rest 90
+                                                :repeat 3
+                                                }
+                                               {:title "Double armed hang on full crimp, this time slightly smaller than the last set, i.e., _ of the the finger tip."
+                                                :holds [3,4]
+                                                :duration 6
+                                                :rest 90
+                                                :repeat 3
+                                                }
+                                               {:title "Single arm hang on 1st joint edge, decrease resistance if required until hang can be completed."
+                                                :holds [1, 4, 5]
+                                                :duration 6
+                                                :rest 60
+                                                :repeat 6
+                                                }
+                                               {:title "Rest"
+                                                :duration 0
+                                                :rest 240
+                                                :repeat 1
+                                                }
+                                               {:title "Single arm lock off at 90 degrees"
+                                                :holds [1, 5]
+                                                :duration 8
+                                                :rest 120
+                                                :repeat 6
+                                                }
+                                               {:title "Two one armed pull ups"
+                                                :holds [1, 5]
+                                                :duration 0
+                                                :rest 120
+                                                :repeat 4
+                                                }              
+                                               {:title "Front levers"
+                                                :holds [1]
+                                                :duration 8
+                                                :rest 120
+                                                :repeat 3
+                                                }              
+                                               ]}}))
 
 (defn expand [{:keys [repeat] :as m}]
   (map-indexed  (fn [i coll] (assoc coll :count (inc i))) (take repeat (cycle [m]))))
@@ -167,35 +209,41 @@
 (defn add-id [workout]
   (map-indexed (fn [i coll] (assoc coll :id i)) workout))
 
-(defn do-workout []
-  (run (mapcat expand (add-id (:workout @app-state)))))
+(defn do-workout [workout]
+  (run (mapcat expand (add-id workout))))
 
-(defn start-workout []
+(defn start-workout [workout]
   (om/update! (om/root-cursor app-state) [:running-workout] true)
-  (om/update! (om/root-cursor app-state) [:current-exercise] (assoc (first (:workout @app-state))
+  (om/update! (om/root-cursor app-state) [:current-exercise] (assoc (first workout)
                                                                     :remaining 10 :activity :ready))
-  (do-workout))
+  (do-workout workout))
 
 #_(defroute  "/workout" []
     (.log js/console "starting workout")
     (start-workout))
 
-(defn show-root []
+(defn show-root [workout]
   (let [go-chan (listen (by-id "ok") "click")]
-    (go (<! go-chan) (start-workout))))
+    (go (<! go-chan) (start-workout workout))))
 
 #_(defroute "/" []
     (.log js/console "showing root")
     (show-root))
 
+(defn choose-workout [workout-key]
+  (om/update! (om/root-cursor app-state) [:workout] (get-in @app-state [:workouts workout-key])))
+
 (defn main []
-  (let [total-duration (total-duration (:workout @app-state))]
-        (swap! app-state update-in [:workout] add-id )
-        (om/root components/show-workout app-state {:target (by-id "app")})
-        (show-root)
-        (om/update! (om/root-cursor app-state) [:running-workout] false)
-        (om/update! (om/root-cursor app-state) [:total-duration] total-duration)
-        (om/update! (om/root-cursor app-state) [:remaining] total-duration))
+  (let [workout (get-in @app-state [:workouts :transgression])
+        total-duration (total-duration workout)]
+;    (swap! app-state assoc :workout workout)
+    (swap! app-state update-in [:workouts :moon] add-id )
+    (om/root components/app app-state {:target (by-id "app")})
+    (show-root workout)
+
+    (om/update! (om/root-cursor app-state) [:running-workout] false)
+    (om/update! (om/root-cursor app-state) [:total-duration] total-duration)
+    (om/update! (om/root-cursor app-state) [:remaining] total-duration))
   
   #_(let [h (History.)]
       (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

@@ -114,3 +114,17 @@
                    
                    (->go-button (:running-workout data))
                    (->total-workout (:workout data))))))
+
+(defcomponent show-workouts [workouts owner]
+  (render [_]
+            (.log js/console (pr-str workouts))
+              (d/div {} "foo")
+              (d/div {:class "row"}
+                     (d/ul {}
+                           (map #(d/li {} (name %1)) (keys workouts))))))
+
+(defcomponent app [data owner]
+  (render [_]
+          (if (seq (:workout data))
+            (->show-workout data)
+            (->show-workouts (:workouts data)))))

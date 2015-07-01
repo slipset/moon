@@ -2,6 +2,8 @@
     (:require [clojure.string :as string]
               [goog.string :as gstring]
               [goog.string.format]
+              [cljs.core.async :refer
+               [put!]]
               [om.core :as om]
               [moon.dom :refer [by-id listen]]
               [om-bootstrap.button :as b]
@@ -86,14 +88,30 @@
                    (d/tbody
                     (map ->workout-detail data)))))
 
+(defn- event-handler [owner event]
+  (fn [e]
+    (put! (om/get-shared owner [:config :flux])
+          event)
+    (.preventDefault e)))
+  
 (defcomponent go-button [data owner]
   (render [_]
           (when-not data
             (d/div {:class "row"}
                    (d/div {:class "col-xs-12"}
-                          (b/button {:bs-style "success" :block? true :id "ok"}
+                          (b/button {:bs-style "success" :block? true :id "ok"
+                                     :onClick (event-handler owner {:event :start-workout})}
                                     "Go!"))))))
 
+(defcomponent home-button [data owner]
+  (render [_]
+          (when-not data
+            (d/div {:class "row"}
+                   (d/div {:class "col-xs-12"}
+                          (b/button {:block? true 
+                                     :onClick (event-handler owner {:event :home})}
+                                    "Home"))))))
+  
 (defcomponent show-workout [data owner]
   (render [_]
           (let [current (:current-exercise data)]
@@ -114,9 +132,8 @@
                    
                    
                    (->go-button (:running-workout data))
-                   (->total-workout (:workout data)))))
-  (did-mount [_]
-             (assoc data :ok-channel (listen (by-id "ok") "click"))))
+                   (->total-workout (:workout data))
+                   (->home-button (:running-workout data))))))
 
 (defcomponent show-workouts [workouts owner]
   (render [_]
@@ -124,7 +141,11 @@
               (d/div {:class "row"}
                      (d/ul {}
                            (map #(d/li {}
-                                       (b/button  {:id (name %1)} (name %1))) (keys workouts))))))
+                                       (d/a  {:href "#"
+                                              :onClick (event-handler owner {:event :choose-workout
+                                                                :workout %1})} (name %1))) (keys workouts))))))
+
+
 
 (defcomponent app [data owner]
   (render [_]

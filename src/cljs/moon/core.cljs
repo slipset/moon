@@ -13,6 +13,9 @@
 (defonce app-state (atom {:running-workout false
                           :total-duration 0
                           :current-exercise {}
+                          :config {
+                                   :flux (chan)
+                                   }
                           :workout nil
                           :workouts {
                                      :transgression [
@@ -222,32 +225,37 @@
     (.log js/console "starting workout")
     (start-workout))
 
-(defn show-root [workout]
-  (.log js/console (pr-str (by-id "ok")))
-  (let [go-chan (listen (by-id "ok") "click")]
-    (go (<! go-chan) (start-workout workout))))
-
 #_(defroute "/" []
     (.log js/console "showing root")
     (show-root))
 
+(defmulti event-handlers :event)
 
-(defn listen-for-workout [workouts]
-  (go
-    (let [chans (map #(listen (by-id (name %1)) "click") (keys workouts))
-          [val port] (alts! chans)
-          workout ((keyword (:id val)) workouts)
-          total-duration (total-duration workout)]
-      (om/transact! (om/root-cursor app-state) (fn [s] (merge s {:workout workout
-                                                                 :running-workout false
-                                                                 :total-duration total-duration
-                                                                 :remaining total-duration} )))
-      (show-root workout))))
+(defmethod event-handlers :choose-workout [event]
+  (let [workout (get-in @app-state [:workouts (:workout event)])
+        total-duration (total-duration workout)]
+    (om/transact! (om/root-cursor app-state) (fn [s] (merge s {:workout workout
+                                                               :running-workout false
+                                                               :total-duration total-duration
+                                                               :remaining total-duration})))))
+(defmethod event-handlers :start-workout [event]
+  (start-workout (:workout @app-state)))
+
+(defmethod event-handlers :home [event]
+  (om/transact! (om/root-cursor app-state) (fn [s]
+                                             (assoc s :workout nil :running-workout false))))
+
+(defn handle-events [chan workouts]
+  (go-loop []
+    (event-handlers (<! chan))
+      (recur)))
 
 (defn main []
-  (swap! app-state update-in [:workouts :moon] add-id )
-  (om/root components/app app-state {:target (by-id "app")})
-  (listen-for-workout (:workouts @app-state))
+  (let [config (:config @app-state)]
+    (swap! app-state update-in [:workouts :moon] add-id )
+    (om/root components/app app-state {:target (by-id "app")
+                                       :shared {:config config}})
+    (handle-events (:flux config) (:workouts @app-state)))
   
   #_(let [h (History.)]
       (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

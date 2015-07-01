@@ -23,6 +23,11 @@
           minutes (->minutes (rem seconds 3600))]
       (gstring/format "%02d:%s" hours minutes))))
 
+(defn- event-handler [owner event]
+  (fn [e]
+    (put! (om/get-shared owner [:config :flux])
+          event)))
+
 (defcomponent moon-board [data owner]
   (render [_]
           (d/div {:class "row"}
@@ -34,26 +39,26 @@
   (render [_]
           (d/tr {:id (str "workout-" id)}
                 (d/td title)
-                (d/td {:style {:text-align "right"}} (string/join "/" holds))
+                (d/td {:style {:text-align "right"}} repeat)
                 (d/td {:style {:text-align "right"}} (->minutes duration))
                 (d/td {:style {:text-align "right"}} (->minutes rest))
-                (d/td {:style {:text-align "right"}} repeat))))
+                (d/td {:style {:text-align "right"}} (string/join "/" holds)))))
 
 (defcomponent exercise-detail [{:keys [id count title holds duration rest repeat]} owner]
   (render [_]
           (t/table {:striped? true}
                    (d/thead
                     (d/tr
-                     (d/th "Holds")
+                     (d/th "Sets")
                      (d/th "Duration")
                      (d/th "Rest")
-                     (d/th "Sets"))
+                     (d/th "Holds"))
                     (d/tbody
                      (d/tr {:id (str "workout-" id)}
-                           (d/td (string/join "/" holds))
+                           (d/td (str count "/" repeat))
                            (d/td (->minutes duration))
                            (d/td (->minutes rest))
-                           (d/td (str count "/" repeat))))))))
+                           (d/td (string/join "/" holds))))))))
 
 (defcomponent current-exercise [{:keys [id title holds duration rest repeat remaining activity count] :as data} owner]
   (render [_]
@@ -81,19 +86,13 @@
                    (d/thead
                     (d/tr
                      (d/th {:class "col-xs-8"} "Description")
-                     (d/th {:class "col-xs-1" :style {:text-align "right"}} "Holds")
+                     (d/th {:class "col-xs-1" :style {:text-align "right"}} "Sets")
                      (d/th {:class "col-xs-1" :style {:text-align "right"}} "Duration")
                      (d/th {:class "col-xs-1" :style {:text-align "right"}} "Rest")
-                     (d/th {:class "col-xs-1" :style {:text-align "right"}} "Sets")))
+                     (d/th {:class "col-xs-1" :style {:text-align "right"}} "Holds")))
                    (d/tbody
                     (map ->workout-detail data)))))
 
-(defn- event-handler [owner event]
-  (fn [e]
-    (put! (om/get-shared owner [:config :flux])
-          event)
-    (.preventDefault e)))
-  
 (defcomponent go-button [data owner]
   (render [_]
           (when-not data
@@ -119,16 +118,20 @@
                    (when (seq current)
                      (->current-exercise current))
                    (d/div {:class "row"}
-                          (d/h1 {:class "col-xs-12"}
-                                (r/label {:class "btn-block"} (str (if (seq current)
-                                                "Remaining"
-                                       "Total")) " " (->hours (:remaining data))))
-                          (when (seq current)
-                            (pb/progress-bar {:min 0
-                                              :max 1
-                                              :now (/ (- (:total-duration data)
-                                                         (:remaining data))
-                                                      (:total-duration data))})))
+                          (d/div {:class "col-xs-12 exercise"}
+                                 (d/h1  {:class "exercise btn-block"}
+                                        (r/label {:class "btn-block"} (str (if (seq current)
+                                                                             "Remaining"
+                                                                             "Total")) " "
+                                                                             (->hours (:remaining data))))
+                                 (when (seq current)
+                                   (pb/progress-bar {:style {:height "2px"}
+                                                     :class "total-workout"
+                                                     :min 0
+                                                     :max 1
+                                                     :now (/ (- (:total-duration data)
+                                                                (:remaining data))
+                                                             (:total-duration data))}))))
                    
                    
                    (->go-button (:running-workout data))

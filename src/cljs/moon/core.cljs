@@ -167,9 +167,9 @@
   (merge exercise
          (if (<= seconds duration)
            {:activity :hang :remaining (- duration seconds)
-            :progress (int (* 100 (/ seconds duration))) }
+            :progress (/ seconds duration) }
            {:activity :rest :remaining (- (+ rest duration) seconds)
-            :progress (int (* 100 (/ seconds (+ rest duration))))})))
+            :progress (/ seconds (+ rest duration))})))
 
 (defn- root-cursor []
   (om/root-cursor app-state))

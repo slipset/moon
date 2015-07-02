@@ -22,7 +22,7 @@
                  [om "0.8.0-rc1"]
                  [environ "1.0.0"]]
 
-  :plugins [[lein-cljsbuild "1.0.3"]
+  :plugins [[lein-cljsbuild "1.0.6"]
             [lein-environ "1.0.0"]]
 
   :min-lein-version "2.5.0"

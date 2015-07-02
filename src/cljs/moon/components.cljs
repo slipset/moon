@@ -129,7 +129,7 @@
                                                      :class "total-workout"
                                                      :min 0
                                                      :max 1
-                                                     :now 1 #_(/ (- (:total-duration data)
+                                                     :now 1  #_(/ (- (:total-duration data)
                                                                 (:remaining data))
                                                              (:total-duration data))}))))
                    

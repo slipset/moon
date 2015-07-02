@@ -129,7 +129,9 @@
                                                      :class "total-workout"
                                                      :min 0
                                                      :max 1
-                                                     :now 1  }))))
+                                                     :now (/ (- (:total-duration data)
+                                                                (:remaining data))
+                                                             (:total-duration data))}))))
                    
                    
                    (->go-button (:running-workout data))

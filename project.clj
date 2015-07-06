@@ -22,7 +22,7 @@
                  [om "0.8.0-rc1"]
                  [environ "1.0.0"]]
 
-  :plugins [[lein-cljsbuild "1.0.6"]
+  :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]]
 
   :min-lein-version "2.5.0"
@@ -40,15 +40,15 @@
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.2.1-SNAPSHOT"]
-                                  [figwheel-sidecar "0.2.1-SNAPSHOT"]
-                                  [com.cemerick/piggieback "0.1.3"]
-                                  [weasel "0.4.2"]]
+                   :dependencies [[figwheel "0.2.5"]
+                                  [figwheel-sidecar "0.2.5"]
+                                  [com.cemerick/piggieback "0.1.5"]
+                                  [weasel "0.6.0"]]
 
-                   :repl-options {:init-ns moon.server
+                   :repl-options {  :init-ns moon.server
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
-                   :plugins [[lein-figwheel "0.2.1-SNAPSHOT"]]
+                   :plugins [[lein-figwheel "0.2.5"]]
 
                    :figwheel {:http-server-root "public"
                               :server-port 3449

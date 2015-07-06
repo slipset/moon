@@ -59,6 +59,48 @@
                                                       :rest 30
                                                       }
                                                      ]
+                                     :short [
+                                            {:title "Double armed dead hang on front three fingers open handed"
+                                             :holds [5]
+                                             :duration 6
+                                             :rest 120
+                                             :repeat 3
+                                             }
+                                            {:title "Double armed dead hang on middle two fingers open handed"
+                                             :holds [5]
+                                             :duration 6
+                                             :rest 90
+                                             :repeat 2
+                                             }
+                                            {:title "Hang open handed on three fingers on one arm, decrease resistance as required until hang can be completed."
+                                             :holds [2,5]
+                                             :duration 6
+                                             :rest 60
+                                             :repeat 6
+                                             }
+                                            {:title "Rest"
+                                             :duration 0
+                                             :rest 240
+                                             :repeat 1
+                                             }
+                                            {:title "Double armed hang on full crimp position, on a first joint edge"
+                                             :holds [1,5]
+                                             :duration 6
+                                             :rest 90
+                                             :repeat 3
+                                             }
+                                            {:title "Double armed hang on full crimp, this time slightly smaller than the last set, i.e., _ of the the finger tip."
+                                             :holds [3,4]
+                                             :duration 6
+                                             :rest 90
+                                             :repeat 3
+                                             }
+                                            {:title "Single arm hang on 1st joint edge, decrease resistance if required until hang can be completed."
+                                             :holds [1, 4, 5]
+                                             :duration 6
+                                             :rest 60
+                                             :repeat 6
+                                             }]
                                      :moon [
                                             {:title "Double armed dead hang on front three fingers open handed"
                                              :holds [5]

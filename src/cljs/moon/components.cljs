@@ -152,6 +152,6 @@
 
 (defcomponent app [data owner]
   (render [_]
-          (if (seq (:workout data))
+          (if (:workout data)
             (->show-workout data)
             (->show-workouts (:workouts data)))))

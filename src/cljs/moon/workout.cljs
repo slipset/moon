@@ -186,11 +186,8 @@
            {:activity :rest :remaining (- (+ rest duration) seconds)
             :progress (/ seconds (+ rest duration))})))
 
-(defn add-id [workout]
-  (map-indexed (fn [i coll] (assoc coll :id i)) workout))
-
 (defn prepare [workout]
-  (mapcat expand (add-id workout)))
+  (mapcat expand workout))
 
 (defn create-update-current-event [current-exercise]
   {:event :update-current
@@ -218,9 +215,8 @@
 (defn pre-workout-countdown [flux clock-channel]
   (go-loop [i 10]
     (<! clock-channel)
-    (>! flux (assoc (done? i) :event :play))
     (when (> i 0)
-      (>! flux {:event :dec-remaining})
+      (>! flux (assoc (done? (dec i)) :event :count-down))
       (recur (dec i)))))
 
 (defn run [flux workout]

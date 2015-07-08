@@ -66,17 +66,17 @@
 (defmethod event-handlers :play [event]
   (play event))
 
-(defmethod event-handlers :dec-remaining [event]
+(defmethod event-handlers :count-down [event]
+  (play event)
   (om/transact! (root-cursor) [:current-exercise :remaining] dec))
 
 (defmethod event-handlers :start-exercise [event]
   (om/transact! (root-cursor) :workout clojure.core/rest))
 
 (defmethod event-handlers :update-current [event]
-  (.log js/console (pr-str event))
   (om/transact! (root-cursor) (fn [s]
-                                (assoc s (merge s event)
-                                       :remaining (dec (:remaining s))))))
+                                (assoc s :remaining (dec (:remaining s))
+                                       :current-exercise (:current-exercise event)))))
 
 (defn handle-events [flux workouts]
   (go-loop []
@@ -85,7 +85,6 @@
 
 (defn main []
   (let [config (:config @app-state)]
-    (swap! app-state update-in [:workouts :moon] workout/add-id )
     (om/root components/app app-state {:target (by-id "app")
                                        :shared {:config config}})
     (handle-events (:flux config) (:workouts @app-state)))

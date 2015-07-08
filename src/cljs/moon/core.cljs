@@ -182,51 +182,12 @@
 (defn- root-cursor []
   (om/root-cursor app-state))
 
-(defn make-updater [current-exercise]
-  (fn [s]
-    (assoc s :current-exercise current-exercise
-           :remaining (dec (:remaining s)))))
 
-(defn count-down [{:keys [duration rest clock-chan title] :as exercise}]
-  (let [total (+ duration rest)]
-    (when (= (:count exercise) 1)
-      (om/transact! (root-cursor) :workout clojure.core/rest))
-    (go-loop [i 0]
-      (<! clock-chan)
-      (let [current-exercise (workout/update-current exercise i)]
-        (play (workout/done? (:remaining current-exercise)))
-        (om/transact! (root-cursor) (make-updater current-exercise))
-        (when (< i total)
-          (recur (inc i)))))))
-
-(defn progressor [clock-chan states-ch]
-  (go-loop []
-    (let [current-state (<! states-ch)]
-      (when current-state
-        (<! (count-down (assoc current-state :clock-chan clock-chan)))
-        (recur)))))
-
-(defn pre-workout-countdown [clock-channel]
-  (go-loop [i 10]
-    (<! clock-channel)
-    (play (workout/done? i))
-    (when (> i 0)
-      (om/transact! (root-cursor) [:current-exercise :remaining] dec)
-      (recur (dec i)))))
-
-(defn run [workout]
-  (let [state-channel (chan)
-        completed-channel (chan)
-        clock-channel (workout/wall-clock)]
-    (go (<! (pre-workout-countdown clock-channel))
-        (progressor clock-channel state-channel)
-        (onto-chan state-channel workout))))
-
-(defn start-workout [workout]
+(defn start-workout [flux workout]
   (om/update! (root-cursor) [:running-workout] true)
   (om/update! (root-cursor) [:current-exercise] (assoc (first workout)
                                                        :remaining 10 :activity :ready))
-  (run (workout/prepare workout)))
+  (workout/run flux workout))
 
 #_(defroute  "/workout" []
     (.log js/console "starting workout")
@@ -246,11 +207,26 @@
                                                   :total-duration total-duration
                                                   :remaining total-duration})))))
 (defmethod event-handlers :start-workout [event]
-  (start-workout (:workout @app-state)))
+  (start-workout (get-in @app-state [:config :flux]) (:workout @app-state)))
 
 (defmethod event-handlers :home [event]
   (om/transact! (root-cursor) (fn [s]
                                 (assoc s :workout nil :running-workout false))))
+
+(defmethod event-handlers :play [event]
+  (play event))
+
+(defmethod event-handlers :dec-remaining [event]
+  (om/transact! (root-cursor) [:current-exercise :remaining] dec))
+
+(defmethod event-handlers :start-exercise [event]
+  (om/transact! (root-cursor) :workout clojure.core/rest))
+
+(defmethod event-handlers :update-current [event]
+  (.log js/console (pr-str event))
+  (om/transact! (root-cursor) (fn [s]
+                                (assoc s (merge s event)
+                                       :remaining (dec (:remaining s))))))
 
 (defn handle-events [chan workouts]
   (go-loop []

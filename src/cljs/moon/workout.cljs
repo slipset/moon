@@ -40,10 +40,46 @@
 (defn add-id [workout]
   (map-indexed (fn [i coll] (assoc coll :id i)) workout))
 
-(defn make-updater [current-exercise]
-  (fn [s]
-    (assoc s :current-exercise current-exercise
-           :remaining (dec (:remaining s)))))
-
 (defn prepare [workout]
   (mapcat expand (add-id workout)))
+
+(defn update-current [current-exercise]
+  {:event :update-current
+         :current-exercise current-exercise})
+
+(defn count-down [flux {:keys [duration rest clock-chan title] :as exercise}]
+  (let [total (+ duration rest)]
+    (when (= (:count exercise) 1)
+      (put! flux {:event :start-exercise}))
+    (go-loop [i 0]
+      (<! clock-chan)
+      (let [current-exercise (update-current exercise)]
+        (>! flux (assoc (done? (:remaining current-exercise)) :event :play))
+        (>! flux (update-current current-exercise)) 
+        (when (< i total)
+          (recur (inc i)))))))
+
+(defn progressor [flux clock-chan states-ch]
+  (go-loop []
+    (let [current-state (<! states-ch)]
+      (when current-state
+        (<! (count-down flux (assoc current-state :clock-chan clock-chan)))
+        (recur)))))
+
+(defn pre-workout-countdown [flux clock-channel]
+  (go-loop [i 10]
+    (<! clock-channel)
+    (>! flux (assoc (done? i) :event :play))
+    (when (> i 0)
+      (>! flux {:event :dec-remaining})
+      (recur (dec i)))))
+
+(defn run [flux workout]
+  (let [state-channel (chan)
+        completed-channel (chan)
+        clock-channel (wall-clock)
+        prepared-workout (prepare workout)]
+    (go (<! (pre-workout-countdown flux clock-channel))
+        (progressor flux clock-channel state-channel)
+        (onto-chan state-channel prepared-workout)))) 
+

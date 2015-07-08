@@ -146,7 +146,7 @@
                            (map #(d/li {}
                                        (d/a  {:href "#"
                                               :onClick (event-handler owner {:event :choose-workout
-                                                                :workout %1})} (name %1))) (keys workouts))))))
+                                                                             :workout %1})} (name %1))) (keys workouts))))))
 
 
 

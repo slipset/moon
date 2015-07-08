@@ -43,7 +43,7 @@
 (defn prepare [workout]
   (mapcat expand (add-id workout)))
 
-(defn update-current [current-exercise]
+(defn create-update-current-event [current-exercise]
   {:event :update-current
          :current-exercise current-exercise})
 
@@ -53,9 +53,9 @@
       (put! flux {:event :start-exercise}))
     (go-loop [i 0]
       (<! clock-chan)
-      (let [current-exercise (update-current exercise)]
+      (let [current-exercise (update-current exercise i)]
         (>! flux (assoc (done? (:remaining current-exercise)) :event :play))
-        (>! flux (update-current current-exercise)) 
+        (>! flux (create-update-current-event current-exercise)) 
         (when (< i total)
           (recur (inc i)))))))
 

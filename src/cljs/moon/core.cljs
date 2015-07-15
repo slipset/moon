@@ -56,6 +56,7 @@
                                                   :running-workout false
                                                   :total-duration total-duration
                                                   :remaining total-duration})))))
+
 (defmethod event-handlers :start-workout [event]
   (start-workout (get-in @app-state [:config :flux]) (:workout @app-state)))
 

@@ -1,8 +1,8 @@
-(ns moon.core
+(ns ^:figwheel-always moon.core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [moon.dom :refer [set-html! by-id listen beep ping]]
-            [cljs.moon.components :as components]
-            [cljs.moon.workout :as workout]            
+            [moon.components :as components]
+            [moon.workout :as workout]            
             [om.core :as om]              
             [goog.events :as events]
             [goog.history.EventType :as EventType]
@@ -54,7 +54,7 @@
         total-duration (workout/total-duration workout)]
     (om/transact! (root-cursor) (fn [s] (merge s {:workout workout
                                                   :running-workout false
-                                                  :total-duration total-duration
+                                                  :total-duration total-duration 
                                                   :remaining total-duration})))))
 
 (defmethod event-handlers :start-workout [event]
@@ -76,7 +76,8 @@
 
 (defmethod event-handlers :update-current [event]
   (om/transact! (root-cursor) (fn [s]
-                                (assoc s :remaining (dec (:remaining s))
+                                (assoc s
+                                       :remaining (dec (:remaining s)) 
                                        :current-exercise (:current-exercise event)))))
 
 (defn handle-events [flux workouts]
@@ -98,3 +99,4 @@
 (defn on-reload []
   (close! workout/wall-clock))
 
+(main)

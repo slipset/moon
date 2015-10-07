@@ -1,4 +1,4 @@
-(ns cljs.moon.components
+(ns moon.components
     (:require [clojure.string :as string]
               [goog.string :as gstring]
               [goog.string.format]
@@ -6,22 +6,19 @@
                [put!]]
               [om.core :as om]
               [moon.dom :refer [by-id listen]]
+              [moon.timing :as timing]
               [om-bootstrap.button :as b]
               [om-bootstrap.random :as r]
               [om-bootstrap.table :as t]
               [om-bootstrap.progress-bar :as pb]              
-              [om-tools.core :refer-macros [defcomponent]]
-              [om-tools.dom :as d :include-macros true]))
+              [om-tools.core  :refer-macros [defcomponent]]
+              [om-tools.dom :as d :include-macros true])) 
 
 (defn ->minutes [seconds]
-  (gstring/format "%02d:%02d" (int (/ seconds 60))  (rem seconds 60)))
+  (let [[_ min secs] (timing/->hours seconds)] (gstring/format "%02d:%02d" min secs)))
 
 (defn ->hours [seconds]
-  (if (< seconds 3600)
-    (->minutes seconds)
-    (let [hours (int (/ seconds 3600))
-          minutes (->minutes (rem seconds 3600))]
-      (gstring/format "%02d:%s" hours minutes))))
+  (let [[hours mins sec] (timing/->hours seconds)] (gstring/format "%02d:%02d:%02d" hours mins sec)))
 
 (defn- event-handler [owner event]
   (fn [e]

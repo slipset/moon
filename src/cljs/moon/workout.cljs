@@ -86,15 +86,6 @@
                         :rest 60
                         :repeat 6
                         }]
-               :super-short [
-                                                   {:title "Double armed dead hang on front three fingers open handed"
-                       :holds [5]
-                       :duration 6
-                       :rest 120
-                       :repeat 1
-                       }
-                                                   
-                      ]
                :moon [
                       {:title "Double armed dead hang on front three fingers open handed"
                        :holds [5]
@@ -182,7 +173,7 @@
 (defn wall-clock []
   (let [output (chan)]
     (go-loop []
-      (<! (timeout 10))
+      (<! (timeout 1000))
       (when (>! output :tick)
         (recur)))
     output))
